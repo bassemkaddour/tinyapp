@@ -9,14 +9,16 @@
 </header>
 <body>
   <ul>
-    <% for (const elem in urls) { %>
-      <li><%= urls[elem] %>
-        <a href=<%= `/urls/${elem}/` %>> Edit </a>
-        <form method="POST" action=<%= `/urls/${elem}/delete` %>>
-          <button>Delete</button>
-        </form>
-      </li>
-    <% }; %>
+    <h3>
+      <% for (const elem in urls) { %>
+        <li><%= urls[elem] %>
+          <a href=<%= `/urls/${elem}/` %>> Edit </a>
+          <form method="POST" action=<%= `/urls/${elem}/delete` %>>
+            <button>Delete</button>
+          </form>
+        </li>
+      <% }; %>
+    </h3>
   </ul>
   <a href='#'></a>
 </body>

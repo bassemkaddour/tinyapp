@@ -8,14 +8,18 @@
   <% include ./partials/_header %>
 </header>
 <body>
+  <h3>
   <ul>
-      <li><%= `${longURL} - ${shortURL}` %></li>
+    <li>
+        <%= `${longURL} - ${shortURL}` %>
+        <form action=<%= `/urls/${shortURL}/` %> method='POST'>
+            <label for='updatedLongURL'>Enter the updated URL: </label>
+            <input id='updatedLongURL' type='text' name='updatedLongURL' placeholder='http://' style='width:300px'>
+            <input type='submit' value='Submit'>
+        </form>
+    </li>
   </ul>
-   <form action = <%= `/urls/${shortURL}/` %> method='POST' style='margin:150px;'>
-      <label for='updatedLongURL'>Enter the updated URL: </label>
-      <input id='updatedLongURL' type='text' name='updatedLongURL' placeholder='http://' style='width: 300px'>
-      <input type='submit' value='Submit'>
-    </form>
   <a href='#'></a>
+  </h3>
 </body>
 </html>
