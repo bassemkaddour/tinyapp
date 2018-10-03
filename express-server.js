@@ -81,6 +81,13 @@ app.post('/urls/:id', (req, res) => {
   res.redirect('/urls');
 });
 
+//logout function
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+});
+
+
 function generateRandomString() {
   let stringKey = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let randomString = '';
