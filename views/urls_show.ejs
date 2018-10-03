@@ -2,16 +2,14 @@
 
 <html lang="en">
 <head>
-  <title>TinyApp</title>
+  <title></title>
 </head>
 <header>
   <% include ./partials/_header %>
 </header>
 <body>
   <ul>
-    <% for (const elem in urls) { %>
-      <li><%= urls[elem] %></li>
-    <% }; %>
+      <li><%= `${longURL} - ${shortURL}` %></li>
   </ul>
   <a href='#'></a>
 </body>
