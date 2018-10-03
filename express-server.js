@@ -12,14 +12,14 @@ const urlDatabase = {
 };
 
 app.get('/', (req, res) => {
-  res.send('Hello!');
+  res.redirect('/urls');
 })
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-app.get('/urls.json', (req, res) => {
+app.get('/urls', (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render('urls_index', templateVars);
 });
@@ -35,10 +35,6 @@ app.get('/urls/:id', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-app.get('/hello', (req, res) => {
-  res.send('<html><body>Hello <b>World</b></body></html>\n');
-});
-
 app.post('/urls', (req, res) => {
   let shortURL = generateRandomString();
   let newLongURL = req.body.longURL;
@@ -52,6 +48,14 @@ app.get('/u/:shortURL', (req, res) => {
   console.log(longURL);
   res.redirect(longURL);
 });
+
+//delets urls
+app.post('/urls/:id/delete', (req, res) => {
+  let urlId = req.params.id;
+  delete urlDatabase[urlId];
+  res.redirect('/urls')
+})
+
 
 function generateRandomString() {
   let stringKey = 'abcdefghijklmnopqrstuvwxyz0123456789';

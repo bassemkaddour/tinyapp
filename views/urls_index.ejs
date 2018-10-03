@@ -10,7 +10,11 @@
 <body>
   <ul>
     <% for (const elem in urls) { %>
-      <li><%= urls[elem] %></li>
+      <li><%= urls[elem] %>
+        <form method="POST" action=<%= `/urls/${elem}/delete` %>>
+          <button>Delete</button>
+        </form>
+      </li>
     <% }; %>
   </ul>
   <a href='#'></a>
