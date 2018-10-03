@@ -29,10 +29,14 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.get('/urls/:id', (req, res) => {
-  let templateVars = { shortURL: req.params.id,
-                       longURL: urlDatabase[req.params.id]
-                     };
-  res.render('urls_show', templateVars);
+  if (urlDatabase[req.params.id]) {
+    let templateVars = { shortURL: req.params.id,
+                         longURL: urlDatabase[req.params.id]
+                       };
+    res.render('urls_show', templateVars);
+  } else {
+   res.redirect('/');
+}
 });
 
 app.post('/urls', (req, res) => {
@@ -40,7 +44,7 @@ app.post('/urls', (req, res) => {
   let newLongURL = req.body.longURL;
   console.log(newLongURL);
   urlDatabase[shortURL] = newLongURL;
-  res.redirect(`/urls/${shortURL}`);
+  res.redirect(`/urls/`); //${shortURL}`);
 });
 
 app.get('/u/:shortURL', (req, res) => {
@@ -56,6 +60,13 @@ app.post('/urls/:id/delete', (req, res) => {
   res.redirect('/urls')
 })
 
+//updated urls
+app.post('/urls/:id', (req, res) => {
+  let newLongURL = req.body.updatedLongURL;
+  let urlId = req.params.id;
+  urlDatabase[urlId] = newLongURL;
+  res.redirect('/urls');
+});
 
 function generateRandomString() {
   let stringKey = 'abcdefghijklmnopqrstuvwxyz0123456789';
