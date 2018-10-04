@@ -1,20 +1,14 @@
 
 <header style="text-align:center">
   <h1><strong>TinyApp</strong></h1>
-
-
-  <% if (username) { %>
-    <i><%= `Logged on as: ${username}` %></i>
-      <form method="POST" action="/logout">
-        <button>Logout</button>
-      </form>
+    <% if (!user) { %>
+     <a href='/login'>Login</a>
+     <a href='/register'>Register</a>
   <% } else { %>
-    <form action="/login" method="POST" style="margin:50px">
-      <label for="login">Input username:</label>
-      <input id="login" type="text" name="username" style="width:300px">
-      <input type="submit" value="Submit">
+    <form method="POST" action="/logout">
+        <button>Logout</button>
     </form>
   <% } %>
 
-  </form>
 </header>
+
