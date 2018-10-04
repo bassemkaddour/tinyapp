@@ -14,6 +14,20 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  user1: {
+    id: 'user1',
+    email: 'user1@example.com',
+    password: 'password1'
+  },
+  user2RandomID: {
+    id: 'user2RandomID',
+    email: 'user2@example.com',
+    password: 'password2'
+  }
+}
+
+
 app.get('/', (req, res) => {
   res.redirect('/urls');
 })
@@ -22,6 +36,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+//Gives page with url
 app.get('/urls', (req, res) => {
   let templateVars = { urls: urlDatabase,
                        username: req.cookies["username"]
@@ -60,9 +75,9 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/`); //${shortURL}`);
 });
 
+
 app.get('/u/:shortURL', (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
-  console.log(longURL);
   res.redirect(longURL);
 });
 
@@ -85,6 +100,25 @@ app.post('/urls/:id', (req, res) => {
 app.post('/logout', (req, res) => {
   res.clearCookie('username');
   res.redirect('/urls');
+});
+
+//register page
+app.get('/register', (req, res) => {
+  let templateVars = { username: req.cookies["username"] };
+  res.render('urls_register', templateVars);
+});
+
+//takes data from register page
+app.post('/register', (req, res) => {
+  let id = generateRandomString();
+  let email = req.body.email;
+  let password = req.body.password;
+  users[id] = { id: id,
+                email: email,
+                password: password
+              };
+  res.cookie('user_id', id);
+  res.redirect('/urls')
 });
 
 
