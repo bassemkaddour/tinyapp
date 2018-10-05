@@ -1,14 +1,22 @@
 
-<header style="text-align:center">
+<header style="text-align:center;margin-top:20px">
   <h1><strong>TinyApp</strong></h1>
     <% if (!user) { %>
+    |
      <a href='/login'>Login</a>
+     |
      <a href='/register'>Register</a>
+     |
   <% } else { %>
-    <h4><i><%= `Logged in as: ${user['email']}` %></i></h4>
+    <h5><i><%= `Logged in as: ${user['email']}` %></i></h5>
     <form method="POST" action="/logout">
         <button>Logout</button>
     </form>
+    |
+    <a href="/urls/new" style="text-align:left">Create a new short link </a>
+    |
+    <a href="/urls" style="text-align:left">URL list</a>
+    |
   <% } %>
 
 </header>

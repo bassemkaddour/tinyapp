@@ -9,10 +9,11 @@
   <% include ./partials/_header %>
 </header>
 <body>
+  <br><br><br>
   <ul>
     <h3>
       <% for (const elem in urls) { %>
-        <li><%= elem %> - <%= urls[elem]['longURL'] %>
+        <li><%= urls[elem]['longURL'] %> - <%= elem %>
           <a href=<%= `/urls/${elem}/` %>> Edit </a>
           <form method="POST" action=<%= `/urls/${elem}/delete` %>>
             <button>Delete</button>

@@ -6,13 +6,15 @@ const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080;
 
-app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
   keys: ['nomnomnom']
 }));
 
+app.set('view engine', 'ejs');
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~ Data ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 const urlDatabase = {
   'b2xVn2': { longURL: 'http://www.lighthouselabs.ca',
               shortURL: 'b2xVn2',
@@ -24,113 +26,66 @@ const urlDatabase = {
             }
 };
 
-const passwordUser1 = bcrypt.hashSync('password1', 10);
-const passwordUser2 = bcrypt.hashSync('password2', 10);
-
 const users = {
   user1: {
     id: 'user1',
     email: 'user1@example.com',
-    password: passwordUser1
+    password: bcrypt.hashSync('password1', 10)
   },
   user2RandomID: {
     id: 'user2RandomID',
     email: 'user2@example.com',
-    password: passwordUser2
+    password: bcrypt.hashSync('password2', 10)
   }
 }
 
 
-app.get('/', (req, res) => {
-  res.redirect('/urls');
-});
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~ Routing ~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-//Gives page with url
-app.get('/urls', (req, res) => {
-  if (checkIfLoggedIn(req.session['user_id'])) {
-    let templateVars = { urls: urlsForUser(req.session['user_id']),
-                         user: users[req.session['user_id']]
-                       };
-    res.render('urls_index', templateVars);
+app.get('/', (req, res) => {
+  if(checkIfLoggedIn(req.session['user_id'])) {
+    res.redirect('/urls');
   } else {
-    let message = 'Please log in or register first.';
-    res.render('urls_forbidden', { user: users[req.session['user_id']],
-                                   message
-                                  });
-  }
-});
-
-
-//creates a shortened url
-app.get('/urls/new', (req, res) => {
-  if (!checkIfLoggedIn(req.session['user_id'])) {
     res.redirect('/login');
-  } else {
-    let templateVars = { user: users[req.session['user_id']] };
-    res.render("urls_new", templateVars);
   }
+
 });
 
-//show the short url page, only if the user owns the page. Error message for invalid link.
-app.get('/urls/:id', (req, res) => {
-  if (urlDatabase[req.params.id] && urlDatabase[req.params.id]['userID'] === req.session['user_id']) {
-    let templateVars = { shortURL: req.params.id,
-                         longURL: urlDatabase[req.params.id]['longURL'],
-                         user: users[req.session['user_id']]
-                       };
-    res.render('urls_show', templateVars);
-  } else if (urlDatabase[req.params.id]) {
-    let message = 'This page does not belong to you.';
-    res.render('urls_forbidden', { user: users[req.session['user_id']],
-                                   message
-                                 });
-  } else {
-    let message = 'This page does not exist.';
-    res.render('urls_forbidden', { user: users[req.session['user_id']],
-                                   message
-                                 });
+//register page
+app.get('/register', (req, res) => {
+  if (checkIfLoggedIn(req.session['user_id'])) {
+    res.redirect('/urls')
   }
+  let templateVars = { user: users[req.session['user_id']] };
+  res.render('urls_register', templateVars);
 });
 
-app.post('/urls', (req, res) => {
-  let shortURL = generateRandomString();
-  let newLongURL = req.body.longURL;
-  urlDatabase[shortURL] = { longURL: newLongURL,
-                            shortURL: shortURL,
-                            userID: req.session['user_id']
-                          };
-  res.redirect(`/urls/`); //${shortURL}`);
-});
-
-
-app.get('/u/:shortURL', (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL]['longURL'];
-  res.redirect(longURL);
-});
-
-//delets urls
-app.post('/urls/:id/delete', (req, res) => {
-  let urlId = req.params.id;
-  delete urlDatabase[urlId];
+//takes data from register page
+app.post('/register', (req, res) => {
+  let id = generateRandomString();
+  let email = req.body.email;
+  let password = bcrypt.hashSync(req.body.password, 10);
+  if (!email || !password) {
+    res.status(400).send('Error: Please enter a valid email and password.');
+  } else if (checkEmailExists(email)) {
+    res.status(400).send('Error: This email address is unavailable.')
+  }
+  users[id] = { id: id,
+                email: email,
+                password: password
+              };
+  req.session['user_id'] = id;
   res.redirect('/urls')
-})
-
-//updated urls
-app.post('/urls/:id', (req, res) => {
-  let newLongURL = req.body.updatedLongURL;
-  let urlId = req.params.id;
-  urlDatabase[urlId] = { longURL: newLongURL,
-                         shortURL: urlId,
-                         userID: req.session['user_id']
-                        };
-  res.redirect('/urls');
 });
 
 app.get('/login', (req, res) =>{
+  if (checkIfLoggedIn(req.session['user_id'])) {
+    res.redirect('/urls')
+  }
   let templateVars = { user: users[req.session['user_id']] };
   res.render('urls_login', templateVars);
 });
@@ -164,30 +119,128 @@ app.post('/logout', (req, res) => {
   res.redirect('/urls');
 });
 
-//register page
-app.get('/register', (req, res) => {
-  let templateVars = { user: users[req.session['user_id']] };
-  res.render('urls_register', templateVars);
-});
-
-//takes data from register page
-app.post('/register', (req, res) => {
-  let id = generateRandomString();
-  let email = req.body.email;
-  let password = bcrypt.hashSync(req.body.password, 10);
-  if (!email || !password) {
-    res.status(400).send('Error: Please enter a valid email and password.');
-  } else if (checkEmailExists(email)) {
-    res.status(400).send('Error: This email address is unavailable.')
+//Gives page with a list of urls if logged in, otherwise gives an error page prompting login
+app.get('/urls', (req, res) => {
+  if (checkIfLoggedIn(req.session['user_id'])) {
+    let templateVars = { urls: urlsForUser(req.session['user_id']),
+                         user: users[req.session['user_id']]
+                       };
+    res.render('urls_index', templateVars);
+  } else {
+    res.status(403);
+    let message = 'Please log in or register first.';
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
+                                   message
+                                  });
   }
-  users[id] = { id: id,
-                email: email,
-                password: password
-              };
-  req.session['user_id'] = id;
-  res.redirect('/urls')
 });
 
+//takes a full url input and creates a corresponding short url
+app.post('/urls', (req, res) => {
+  if (checkIfLoggedIn(req.session['user_id'])) {
+    let shortURL = generateRandomString();
+    let newLongURL = req.body.longURL;
+    urlDatabase[shortURL] = { longURL: newLongURL,
+                              shortURL: shortURL,
+                              userID: req.session['user_id']
+                            };
+    res.redirect(`/urls/`); //${shortURL}`);
+  } else {
+      res.status(403);
+      let message = 'You are not permitted.';
+      res.render('urls_forbidden', { user: users[req.session['user_id']],
+                                     message
+                                    });
+  }
+});
+
+//creates a shortened url
+app.get('/urls/new', (req, res) => {
+  if (!checkIfLoggedIn(req.session['user_id'])) {
+    res.redirect('/login');
+  } else {
+    let templateVars = { user: users[req.session['user_id']] };
+    res.render("urls_new", templateVars);
+  }
+});
+
+
+//show the short url page, only if the user owns the page. Error message for invalid link.
+app.get('/urls/:id', (req, res) => {
+  let databaseElem = urlDatabase[req.params.id];
+  if (databaseElem && databaseElem['userID'] === req.session['user_id']) {
+    let templateVars = { shortURL: req.params.id,
+                         longURL: databaseElem['longURL'],
+                         user: users[req.session['user_id']]
+                       };
+    res.render('urls_show', templateVars);
+  } else if (databaseElem) {
+    res.status(403);
+    let message = 'This page does not belong to you.';
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
+                                   message
+                                 });
+  } else {
+    res.status(404);
+    let message = 'This page does not exist.';
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
+                                   message
+                                 });
+  }
+});
+
+//edit pre-existing urls
+app.post('/urls/:id', (req, res) => {
+  if (checkIfLoggedIn(req.session['user_id'])) {
+    let newLongURL = req.body.updatedLongURL;
+    let urlId = req.params.id;
+    urlDatabase[urlId] = { longURL: newLongURL,
+                           shortURL: urlId,
+                           userID: req.session['user_id']
+                          };
+    res.redirect('/urls');
+  } else {
+    res.status(403);
+    let message = 'You are not permitted.';
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
+                                   message
+                                  });
+  }
+});
+
+//delets urls
+app.post('/urls/:id/delete', (req, res) => {
+  if (checkIfLoggedIn(req.session['user_id'])) {
+    let urlId = req.params.id;
+    delete urlDatabase[urlId];
+    res.redirect('/urls');
+  } else {
+    res.status(403);
+    let message = 'You are not permitted.';
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
+                                   message
+                                  });
+  }
+})
+
+//redirects to the page corresponding to the shortURL, or returns an error
+app.get('/u/:shortURL', (req, res) => {
+  let shortLink = req.params.shortURL;
+  if (urlDatabase[shortLink]) {
+    let longURL = urlDatabase[shortLink]['longURL'];
+    res.redirect(longURL);
+  } else {
+    res.status(404);
+    let message = 'This page does not exist.';
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
+                                   message
+                                 });
+  }
+
+});
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Functions~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 function generateRandomString() {
   let stringKey = 'abcdefghijklmnopqrstuvwxyz0123456789';
