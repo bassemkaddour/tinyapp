@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
 const app = express();
@@ -8,7 +8,10 @@ const PORT = 8080;
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['nomnomnom']
+}));
 
 const urlDatabase = {
   'b2xVn2': { longURL: 'http://www.lighthouselabs.ca',
@@ -48,14 +51,14 @@ app.listen(PORT, () => {
 
 //Gives page with url
 app.get('/urls', (req, res) => {
-  if (checkIfLoggedIn(req.cookies['user_id'])) {
-    let templateVars = { urls: urlsForUser(req.cookies['user_id']),
-                         user: users[req.cookies['user_id']]
+  if (checkIfLoggedIn(req.session['user_id'])) {
+    let templateVars = { urls: urlsForUser(req.session['user_id']),
+                         user: users[req.session['user_id']]
                        };
     res.render('urls_index', templateVars);
   } else {
     let message = 'Please log in or register first.';
-    res.render('urls_forbidden', { user: users[req.cookies['user_id']],
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
                                    message
                                   });
   }
@@ -64,30 +67,30 @@ app.get('/urls', (req, res) => {
 
 //creates a shortened url
 app.get('/urls/new', (req, res) => {
-  if (!checkIfLoggedIn(req.cookies['user_id'])) {
+  if (!checkIfLoggedIn(req.session['user_id'])) {
     res.redirect('/login');
   } else {
-    let templateVars = { user: users[req.cookies['user_id']] };
+    let templateVars = { user: users[req.session['user_id']] };
     res.render("urls_new", templateVars);
   }
 });
 
 //show the short url page, only if the user owns the page. Error message for invalid link.
 app.get('/urls/:id', (req, res) => {
-  if (urlDatabase[req.params.id] && urlDatabase[req.params.id]['userID'] === req.cookies['user_id']) {
+  if (urlDatabase[req.params.id] && urlDatabase[req.params.id]['userID'] === req.session['user_id']) {
     let templateVars = { shortURL: req.params.id,
                          longURL: urlDatabase[req.params.id]['longURL'],
-                         user: users[req.cookies['user_id']]
+                         user: users[req.session['user_id']]
                        };
     res.render('urls_show', templateVars);
   } else if (urlDatabase[req.params.id]) {
     let message = 'This page does not belong to you.';
-    res.render('urls_forbidden', { user: users[req.cookies['user_id']],
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
                                    message
                                  });
   } else {
     let message = 'This page does not exist.';
-    res.render('urls_forbidden', { user: users[req.cookies['user_id']],
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
                                    message
                                  });
   }
@@ -98,7 +101,7 @@ app.post('/urls', (req, res) => {
   let newLongURL = req.body.longURL;
   urlDatabase[shortURL] = { longURL: newLongURL,
                             shortURL: shortURL,
-                            userID: req.cookies['user_id']
+                            userID: req.session['user_id']
                           };
   res.redirect(`/urls/`); //${shortURL}`);
 });
@@ -122,13 +125,13 @@ app.post('/urls/:id', (req, res) => {
   let urlId = req.params.id;
   urlDatabase[urlId] = { longURL: newLongURL,
                          shortURL: urlId,
-                         userID: req.cookies['user_id']
+                         userID: req.session['user_id']
                         };
   res.redirect('/urls');
 });
 
 app.get('/login', (req, res) =>{
-  let templateVars = { user: users[req.cookies['user_id']] };
+  let templateVars = { user: users[req.session['user_id']] };
   res.render('urls_login', templateVars);
 });
 
@@ -142,20 +145,20 @@ app.post('/login', (req, res) => {
     res.status(403).send('Error: Please enter a valid email and password.');
   }
 
-  res.cookie('user_id', id);
+  req.session['user_id'] = id;
   res.redirect('/');
 })
 
 
 //logout function
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect('/urls');
 });
 
 //register page
 app.get('/register', (req, res) => {
-  let templateVars = { user: users[req.cookies['user_id']] };
+  let templateVars = { user: users[req.session['user_id']] };
   res.render('urls_register', templateVars);
 });
 
@@ -173,7 +176,7 @@ app.post('/register', (req, res) => {
                 email: email,
                 password: password
               };
-  res.cookie('user_id', id);
+  req.session['user_id'] = id;
   res.redirect('/urls')
 });
 
