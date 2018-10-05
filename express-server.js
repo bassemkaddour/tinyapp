@@ -44,10 +44,17 @@ app.listen(PORT, () => {
 
 //Gives page with url
 app.get('/urls', (req, res) => {
-  let templateVars = { urls: urlsForUser(req.cookies['user_id']),
-                       user: users[req.cookies['user_id']]
-                     };
-  res.render('urls_index', templateVars);
+  if (checkIfLoggedIn(req.cookies['user_id'])) {
+    let templateVars = { urls: urlsForUser(req.cookies['user_id']),
+                         user: users[req.cookies['user_id']]
+                       };
+    res.render('urls_index', templateVars);
+  } else {
+    let message = 'Please log in or register first.';
+    res.render('urls_forbidden', { user: users[req.cookies['user_id']],
+                                   message
+                                  });
+  }
 });
 
 
@@ -55,30 +62,36 @@ app.get('/urls', (req, res) => {
 app.get('/urls/new', (req, res) => {
   if (!checkIfLoggedIn(req.cookies['user_id'])) {
     res.redirect('/login');
+  } else {
+    let templateVars = { user: users[req.cookies['user_id']] };
+    res.render("urls_new", templateVars);
   }
-  let templateVars = { user: users[req.cookies['user_id']] };
-  console.log(urlDatabase)
-  res.render("urls_new", templateVars);
 });
 
-
+//show the short url page, only if the user owns the page. Error message for invalid link.
 app.get('/urls/:id', (req, res) => {
-  if (urlDatabase[req.params.id]) {
+  if (urlDatabase[req.params.id] && urlDatabase[req.params.id]['userID'] === req.cookies['user_id']) {
     let templateVars = { shortURL: req.params.id,
                          longURL: urlDatabase[req.params.id]['longURL'],
                          user: users[req.cookies['user_id']]
                        };
-    console.log(urlDatabase);
     res.render('urls_show', templateVars);
+  } else if (urlDatabase[req.params.id]) {
+    let message = 'This page does not belong to you.';
+    res.render('urls_forbidden', { user: users[req.cookies['user_id']],
+                                   message
+                                 });
   } else {
-      res.redirect('/');
+    let message = 'This page does not exist.';
+    res.render('urls_forbidden', { user: users[req.cookies['user_id']],
+                                   message
+                                 });
   }
 });
 
 app.post('/urls', (req, res) => {
   let shortURL = generateRandomString();
   let newLongURL = req.body.longURL;
-  console.log(newLongURL);
   urlDatabase[shortURL] = { longURL: newLongURL,
                             shortURL: shortURL,
                             userID: req.cookies['user_id']
@@ -107,7 +120,6 @@ app.post('/urls/:id', (req, res) => {
                          shortURL: urlId,
                          userID: req.cookies['user_id']
                         };
-  console.log(urlDatabase);
   res.redirect('/urls');
 });
 
@@ -198,7 +210,7 @@ function findIdByEmail(email) {
 
 function checkIfLoggedIn(userCookie) {
   for (const user in users) {
-    if (user === userCookie) {
+    if (users[user]['id'] === userCookie) {
       return true;
     }
   }
