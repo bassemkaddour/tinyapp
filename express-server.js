@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = 8080;
@@ -20,23 +21,26 @@ const urlDatabase = {
             }
 };
 
+const passwordUser1 = bcrypt.hashSync('password1', 10);
+const passwordUser2 = bcrypt.hashSync('password2', 10);
+
 const users = {
   user1: {
     id: 'user1',
     email: 'user1@example.com',
-    password: 'password1'
+    password: passwordUser1
   },
   user2RandomID: {
     id: 'user2RandomID',
     email: 'user2@example.com',
-    password: 'password2'
+    password: passwordUser2
   }
 }
 
 
 app.get('/', (req, res) => {
   res.redirect('/urls');
-})
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -159,7 +163,7 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
   let id = generateRandomString();
   let email = req.body.email;
-  let password = req.body.password;
+  let password = bcrypt.hashSync(req.body.password, 10);
   if (!email || !password) {
     res.status(400).send('Error: Please enter a valid email and password.');
   } else if (checkEmailExists(email)) {
@@ -194,7 +198,7 @@ function checkEmailExists(email) {
 }
 
 function checkPasswordMatches(password, id) {
-  if (users[id]['password'] === password) {
+  if (bcrypt.compareSync(password, users[id]['password'])) {
     return true;
   }
   return false;
