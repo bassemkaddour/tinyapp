@@ -138,11 +138,19 @@ app.get('/login', (req, res) =>{
 //deals with login
 app.post('/login', (req, res) => {
   if (!checkEmailExists(req.body.email)) {
-    res.status(403).send('Error: Please enter a valid email and password.');
+    res.status(403);
+    let message = 'Error: Please enter a valid email and password.';
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
+                                   message
+                                  });
   }
   let id = findIdByEmail(req.body.email);
   if (!checkPasswordMatches(req.body.password, id)) {
-    res.status(403).send('Error: Please enter a valid email and password.');
+    res.status(403);
+    let message = 'Error: Please enter a valid email and password.';
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
+                                   message
+                                  });
   }
 
   req.session['user_id'] = id;
