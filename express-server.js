@@ -1,4 +1,4 @@
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~ Requirements ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependencies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -200,11 +200,13 @@ app.get('/urls/:id', (req, res) => {
   }
 });
 
-//edit pre-existing urls
+//edit pre-existing urls if you are logged in and the owner
+//can't be accessed from within the site unless you are logged in and the owner
 app.post('/urls/:id', (req, res) => {
-  if (checkIfLoggedIn(req.session['user_id'])) {
+  const urlId = req.params.id;
+  const cookie = req.session['user_id'];
+  if (checkIfLoggedIn(cookie) && checkIfOwner(cookie, urlId)) {
     const newLongURL = req.body.updatedLongURL;
-    const urlId = req.params.id;
     urlDatabase[urlId] = { longURL: newLongURL,
                            shortURL: urlId,
                            userID: req.session['user_id']
@@ -219,10 +221,12 @@ app.post('/urls/:id', (req, res) => {
   }
 });
 
-//delets urls
+//delets urls if you are logged in and the url owner.
+//can't be accessed from within the site unless you are logged in and the owner
 app.post('/urls/:id/delete', (req, res) => {
-  if (checkIfLoggedIn(req.session['user_id'])) {
-    const urlId = req.params.id;
+  const urlId = req.params.id;
+  const cookie = req.session['user_id'];
+  if (checkIfLoggedIn(cookie) && checkIfOwner(cookie, urlId)) {
     delete urlDatabase[urlId];
     res.redirect('/urls');
   } else {
@@ -304,6 +308,13 @@ function urlsForUser(id) {
     }
   }
   return filteredURLs;
+}
+
+function checkIfOwner(cookie, urlId) {
+  if (urlDatabase[urlId]['userID'] === cookie) {
+    return true;
+  }
+  return false;
 }
 
 
