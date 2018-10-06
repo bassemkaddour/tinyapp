@@ -6,14 +6,16 @@
 </head>
 <header>
   <% include ./partials/_header %>
-  <h3 style="text-align:center">Login</h3>
+  <br>
+  <h2 style="text-align:center">Login</h2>
 </header>
+<br><br><br>
 <body>
-  <form method="POST" action="/login">
-    <label for="email">Enter your email: &emsp;&emsp;</label>
-    <input id="email" type="email" name="email" type="text" style="width:299px">
+  <form  style="margin-left: 35px;" method="POST" action="/login" >
+    <label style="font-size:19px;" for="email">Enter your email: &emsp;&ensp;&nbsp;&nbsp;</label>
+    <input id="email" type="email" name="email" type="text" style="width:301px">
     <br>
-    <label for="password">Enter your password:&nbsp;</label>
+    <label style="font-size:20px;" for="password">Enter your password:&nbsp;</label>
     <input id="password" type="password" name="password" type="text" style="width:300px">
     <input type="submit" value="submit">
   </form>

@@ -58,7 +58,8 @@ app.get('/', (req, res) => {
 
 });
 
-//register page
+//---------------------- Registration --------------------//
+
 app.get('/register', (req, res) => {
   if (checkIfLoggedIn(req.session['user_id'])) {
     res.redirect('/urls')
@@ -67,12 +68,10 @@ app.get('/register', (req, res) => {
   res.render('urls_register', templateVars);
 });
 
-//takes data from register page
 app.post('/register', (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
-  const password = bcrypt.hashSync(req.body.password, 10);
-  if (!email || !password) {
+  if (!email || !req.body.password) {
     res.status(400);
     const message = 'Error: Please enter a valid email and password.';
     res.render('urls_forbidden', { user: users[req.session['user_id']],
@@ -84,14 +83,19 @@ app.post('/register', (req, res) => {
     res.render('urls_forbidden', { user: users[req.session['user_id']],
                                    message
                                   });
+  } else {
+    const password = bcrypt.hashSync(req.body.password, 10);
+    users[id] = { id: id,
+                  email: email,
+                  password: password
+                };
+    req.session['user_id'] = id;
+    res.redirect('/urls')
   }
-  users[id] = { id: id,
-                email: email,
-                password: password
-              };
-  req.session['user_id'] = id;
-  res.redirect('/urls')
 });
+
+
+//------------------------ Login ----------------------//
 
 app.get('/login', (req, res) =>{
   if (checkIfLoggedIn(req.session['user_id'])) {
@@ -101,7 +105,6 @@ app.get('/login', (req, res) =>{
   res.render('urls_login', templateVars);
 });
 
-//deals with login
 app.post('/login', (req, res) => {
   if (!checkEmailExists(req.body.email)) {
     res.status(403);
@@ -123,12 +126,12 @@ app.post('/login', (req, res) => {
   res.redirect('/');
 })
 
-
-//logout function
 app.post('/logout', (req, res) => {
   req.session = null;
   res.redirect('/urls');
 });
+
+
 
 //Gives page with a list of urls if logged in, otherwise gives an error page prompting login
 app.get('/urls', (req, res) => {
@@ -145,6 +148,8 @@ app.get('/urls', (req, res) => {
                                   });
   }
 });
+
+//------------------------ Pages ----------------------//
 
 //takes a full url input and creates a corresponding short url
 app.post('/urls', (req, res) => {

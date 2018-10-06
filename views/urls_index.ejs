@@ -7,15 +7,20 @@
 </head>
 <header>
   <% include ./partials/_header %>
+  <br>
+  <h2 style="text-align:center">Shortened URLs:</h2>
 </header>
 <body>
-  <br><br><br>
-  <ul>
+  <br><br>
+  <ul style="margin-left:50px">
     <h3>
       <% for (const elem in urls) { %>
-        <li><%= urls[elem]['longURL'] %> - <%= elem %>
-          <a href=<%= `/urls/${elem}/` %>> Edit </a>
-          <form method="POST" action=<%= `/urls/${elem}/delete` %>>
+        <a href=<%= `/u/${elem}/` %>>
+          <li><%= urls[elem]['longURL'] %> - <%= elem %>
+        </a>
+        |
+        <a href=<%= `/urls/${elem}/` %>> Edit </a>
+          <form style="margin-top:5px;" method="POST" action=<%= `/urls/${elem}/delete` %>>
             <button>Delete</button>
           </form>
         </li>

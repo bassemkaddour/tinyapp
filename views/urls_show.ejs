@@ -7,16 +7,20 @@
 </head>
 <header>
   <% include ./partials/_header %>
+  <br>
+  <h2 style="text-align:center">Edit your URL:</h2>
 </header>
-<br><br><br>
+<br><br>
 <body>
   <h3>
-    <ul>
+    <ul style="margin-left:50px">
       <li>
-          <%= `${longURL} - ${shortURL}` %>
+          <a href=<%= `/u/${shortURL}/` %>>
+            <%= `${longURL} - ${shortURL}` %>
+          </a>
           <form action=<%= `/urls/${shortURL}/` %> method="POST">
               <h4><i>
-                <label for="updatedLongURL">Enter the updated URL: </label>
+                <label style="margin-top:15px;" for="updatedLongURL">Enter the updated URL: </label>
                 <input id="updatedLongURL" type="text" name="updatedLongURL" placeholder="http://" style="width:300px">
                 <input type="submit" value="Submit">
               </h4></i>

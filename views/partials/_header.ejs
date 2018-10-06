@@ -9,13 +9,13 @@
      |
   <% } else { %>
     <h5><i><%= `Logged in as: ${user['email']}` %></i></h5>
-    <form method="POST" action="/logout">
+    <form method="POST" action="/logout" style="margin-bottom:0px">
         <button>Logout</button>
     </form>
     |
-    <a href="/urls/new" style="text-align:left">Create a new short link </a>
+    <a href="/urls/new">Create a new short link </a>
     |
-    <a href="/urls" style="text-align:left">URL list</a>
+    <a href="/urls">URL list</a>
     |
   <% } %>
 
