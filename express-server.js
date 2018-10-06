@@ -16,6 +16,7 @@ app.use(cookieSession({
 
 app.set('view engine', 'ejs');
 
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~ Data ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 const urlDatabase = {
@@ -58,6 +59,7 @@ app.get('/', (req, res) => {
 
 });
 
+
 //---------------------- Registration --------------------//
 
 app.get('/register', (req, res) => {
@@ -95,7 +97,7 @@ app.post('/register', (req, res) => {
 });
 
 
-//------------------------ Login ----------------------//
+//----------------------- Login/Logout ---------------------//
 
 app.get('/login', (req, res) =>{
   if (checkIfLoggedIn(req.session['user_id'])) {
@@ -129,7 +131,6 @@ app.post('/logout', (req, res) => {
   req.session = null;
   res.redirect('/urls');
 });
-
 
 
 //Gives page with a list of urls if logged in, otherwise gives an error page prompting login
@@ -319,8 +320,3 @@ function checkIfOwner(cookie, urlId) {
   }
   return false;
 }
-
-
-
-
-
