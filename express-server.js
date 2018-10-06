@@ -165,7 +165,7 @@ app.post('/urls', (req, res) => {
   }
 });
 
-//creates a shortened url
+//directs to the page for input of a long url to be shortened
 app.get('/urls/new', (req, res) => {
   if (!checkIfLoggedIn(req.session['user_id'])) {
     res.redirect('/login');
