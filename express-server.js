@@ -100,9 +100,10 @@ app.post('/register', (req, res) => {
 app.get('/login', (req, res) =>{
   if (checkIfLoggedIn(req.session['user_id'])) {
     res.redirect('/urls')
+  } else {
+    const templateVars = { user: users[req.session['user_id']] };
+    res.render('urls_login', templateVars);
   }
-  const templateVars = { user: users[req.session['user_id']] };
-  res.render('urls_login', templateVars);
 });
 
 app.post('/login', (req, res) => {
@@ -112,18 +113,16 @@ app.post('/login', (req, res) => {
     res.render('urls_forbidden', { user: users[req.session['user_id']],
                                    message
                                   });
-  }
-  const id = findIdByEmail(req.body.email);
-  if (!checkPasswordMatches(req.body.password, id)) {
+  } else if (!checkPasswordMatches(req.body.password, findIdByEmail(req.body.email))) {
     res.status(403);
     const message = 'Error: Please enter a valid email and password.';
     res.render('urls_forbidden', { user: users[req.session['user_id']],
                                    message
                                   });
+  } else {
+    req.session['user_id'] = findIdByEmail(req.body.email);
+    res.redirect('/');
   }
-
-  req.session['user_id'] = id;
-  res.redirect('/');
 })
 
 app.post('/logout', (req, res) => {
@@ -256,7 +255,6 @@ app.get('/u/:shortURL', (req, res) => {
                                    message
                                  });
   }
-
 });
 
 
@@ -282,7 +280,7 @@ function checkEmailExists(email) {
 }
 
 function checkPasswordMatches(password, id) {
-  if (bcrypt.compareSync(password, users[id]['password'])) {
+  if (users[id] && bcrypt.compareSync(password, users[id]['password'])) {
     return true;
   }
   return false;
