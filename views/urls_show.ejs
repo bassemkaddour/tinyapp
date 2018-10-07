@@ -1,36 +1,36 @@
 <!DOCTYPE html>
 
 <html lang="en">
-<head>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-  <title></title>
-</head>
-<header>
-  <% include ./partials/_header %>
-  <br>
-  <h2 style="text-align:center">Edit your URL:</h2>
-</header>
-<br><br>
-<body>
-  <h3>
-    <ul style="margin-left:50px">
-      <li>
-          <a href=<%= `/u/${shortURL}/` %>>
-            <%= `${longURL} - ${shortURL}` %>
-          </a>
-          <form action=<%= `/urls/${shortURL}/` %> method="POST">
-              <h4><i>
-                <label style="margin-top:15px;" for="updatedLongURL">Enter the updated URL: </label>
-                <input id="updatedLongURL" type="text" name="updatedLongURL" placeholder="http://" style="width:300px">
-                <input type="submit" value="Submit">
-              </h4></i>
-          </form>
-           <form method="POST" action=<%= `/urls/${shortURL}/delete` %>>
-            <button>Delete</button>
-          </form>
-      </li>
-    </ul>
-  <a href="#"></a>
-  </h3>
+  <head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <title>Edit</title>
+  </head>
+  <header>
+    <% include ./partials/_header %>
+    <br>
+    <h2 style="text-align:center">Edit your URL:</h2>
+  </header>
+  <br><br>
+  <body>
+    <h3>
+      <ul style="margin-left:50px">
+        <li>
+            <a href=<%= `/u/${shortURL}/` %>>
+              <%= `${longURL} - ${shortURL}` %>
+            </a>
+            <form action=<%= `/urls/${shortURL}/` %> method="POST">
+                <h4><i>
+                  <label style="margin-top:15px;" for="updatedLongURL">Enter the updated URL: </label>
+                  <input id="updatedLongURL" type="text" name="updatedLongURL" placeholder="http://" style="width:300px">
+                  <input type="submit" value="Submit">
+                </h4></i>
+            </form>
+            <form method="POST" action=<%= `/urls/${shortURL}/delete` %>>
+              <button>Delete</button>
+            </form>
+        </li>
+      </ul>
+    <a href="#"></a>
+    </h3>
 </body>
 </html>

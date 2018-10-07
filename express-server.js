@@ -41,7 +41,7 @@ const users = {
     email: 'user2@example.com',
     password: bcrypt.hashSync('password2', 10)
   }
-}
+};
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Routing ~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -131,6 +131,8 @@ app.post('/logout', (req, res) => {
 });
 
 
+//------------------------ Pages ----------------------//
+
 //Gives page with a list of urls if logged in, otherwise gives an error page prompting login
 app.get('/urls', (req, res) => {
   if (checkIfLoggedIn(req.session['user_id'])) {
@@ -146,8 +148,6 @@ app.get('/urls', (req, res) => {
                                   });
   }
 });
-
-//------------------------ Pages ----------------------//
 
 //takes a full url input and creates a corresponding short url
 app.post('/urls', (req, res) => {
@@ -224,7 +224,7 @@ app.post('/urls/:id', (req, res) => {
   }
 });
 
-//delets urls if you are logged in and the url owner.
+//deletes urls if you are logged in and the url owner.
 //can't be accessed from within the site unless you are logged in and the owner
 app.post('/urls/:id/delete', (req, res) => {
   const urlId = req.params.id;
@@ -239,7 +239,7 @@ app.post('/urls/:id/delete', (req, res) => {
                                    message
                                   });
   }
-})
+});
 
 //redirects to the page corresponding to the shortURL, or returns an error
 app.get('/u/:shortURL', (req, res) => {
