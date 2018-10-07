@@ -17,7 +17,7 @@ app.use(cookieSession({
 app.set('view engine', 'ejs');
 
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~ Data ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Data ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 const urlDatabase = {
   'b2xVn2': { longURL: 'http://www.lighthouselabs.ca',
@@ -44,7 +44,7 @@ const users = {
 }
 
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~ Routing ~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Routing ~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -73,19 +73,8 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
-  if (!email || !req.body.password) {
-    res.status(400);
-    const message = 'Error: Please enter a valid email and password.';
-    res.render('urls_forbidden', { user: users[req.session['user_id']],
-                                   message
-                                  });
-  } else if (checkEmailExists(email)) {
-    res.status(400);
-    const message = 'Error: This email address is unavailable.';
-    res.render('urls_forbidden', { user: users[req.session['user_id']],
-                                   message
-                                  });
-  } else {
+  const emailExist = checkEmailExists(email);
+  if (email && req.body.password && !emailExist) {
     const password = bcrypt.hashSync(req.body.password, 10);
     users[id] = { id: id,
                   email: email,
@@ -93,6 +82,18 @@ app.post('/register', (req, res) => {
                 };
     req.session['user_id'] = id;
     res.redirect('/urls')
+  } else if (emailExist) {
+    res.status(400);
+    const message = 'Error: This email address is unavailable.';
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
+                                   message
+                                  });
+  } else {
+    res.status(400);
+    const message = 'Error: Please enter a valid email and password.';
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
+                                   message
+                                  });
   }
 });
 
@@ -109,23 +110,20 @@ app.get('/login', (req, res) =>{
 });
 
 app.post('/login', (req, res) => {
-  if (!checkEmailExists(req.body.email)) {
-    res.status(403);
-    const message = 'Error: Please enter a valid email and password.';
-    res.render('urls_forbidden', { user: users[req.session['user_id']],
-                                   message
-                                  });
-  } else if (!checkPasswordMatches(req.body.password, findIdByEmail(req.body.email))) {
-    res.status(403);
-    const message = 'Error: Please enter a valid email and password.';
-    res.render('urls_forbidden', { user: users[req.session['user_id']],
-                                   message
-                                  });
-  } else {
-    req.session['user_id'] = findIdByEmail(req.body.email);
+  const email = req.body.email;
+  const id = findIdByEmail(email);
+  if (checkEmailExists(email) && checkPasswordMatches(req.body.password, id)) {
+    req.session['user_id'] = id;
     res.redirect('/');
+  } else {
+    res.status(403);
+    const message = 'Error: Please enter a valid email and password.';
+    res.render('urls_forbidden', { user: users[req.session['user_id']],
+                                   message
+                                  });
   }
-})
+});
+
 
 app.post('/logout', (req, res) => {
   req.session = null;
